@@ -1,8 +1,3 @@
-// Enter your login and password here
-var mintUser = 'YOUR_MINT_USERNAME'
-var mintPass = 'YOUR_MINT_PASSWORD'
-//
-
 var fs = require('fs')
 var system = require('system')
 // Emulates node __dirname
@@ -11,11 +6,12 @@ var __dirname = fs.absolute(currentFile).split('/')
 __dirname.pop()
 __dirname = __dirname.join("/") + "/"
 var cookiePath = __dirname + '/storage/cookies.json'
-var token = null
+var token = null, mintEmail, mintPass
 var request_id = 42
+
 var casper = require('casper').create({
-    verbose: true,
-    logLevel: 'debug',
+    //verbose: true,
+    //logLevel: 'debug',
     pageSettings: {
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     },
@@ -41,10 +37,18 @@ var casper = require('casper').create({
             return val;
         });
 
-        this.echo(obj)
-        this.exit(255)
+        casper.echo(obj)
+        caspe.exit(255)
     }
 })
+
+// Allow CLI options to override the options above
+if (casper.cli.get('email') && casper.cli.get('password')) {
+    mintEmail = casper.cli.get('email');
+    mintPass  = casper.cli.get('password')
+} else {
+    casper.options.onDie(casper, 'You must enter an e-mail and password')
+}
 
 // Restore cookies from file
 if (fs.isFile(cookiePath))
@@ -63,7 +67,7 @@ casper.thenOpen('https://wwws.mint.com/login.event', function() {
     this.waitForSelector("form input[name='Email']", function() {
         casper.log('Found login form')
         this.fillSelectors('form#ius-form-sign-in', {
-            'input[name = Email]' :  mintUser,
+            'input[name = Email]' :  mintEmail,
             'input[name = Password]' : mintPass
         }, true)
 
