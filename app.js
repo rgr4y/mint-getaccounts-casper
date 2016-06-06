@@ -1,6 +1,6 @@
 var fs = require('fs')
 var system = require('system')
-// Emulates node __dirname
+// Emulates node __dirname for casper
 var currentFile = require('system').args[3]
 var __dirname = fs.absolute(currentFile).split('/')
 __dirname.pop()
@@ -151,3 +151,4 @@ function getAccounts()
 }
 
 casper.run()
+
