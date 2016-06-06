@@ -1,22 +1,20 @@
 var fs = require('fs')
-var system = require('system')
-// Emulates node __dirname for casper
-var currentFile = require('system').args[3]
-var __dirname = fs.absolute(currentFile).split('/')
-__dirname.pop()
-__dirname = __dirname.join("/") + "/"
-var cookiePath = __dirname + '/storage/cookies.json'
 var token = null, mintEmail, mintPass
 var request_id = 42
+var system = require('system')
+var __dirname = fs.absolute(system.args[3]).split('/')
+__dirname.pop()
+__dirname = __dirname.join("/") + "/"
+var cookiePath = __dirname + "/storage/cookies.json"
 
 var casper = require('casper').create({
-    //verbose: true,
-    //logLevel: 'debug',
+    verbose: true,
+    logLevel: 'debug',
     pageSettings: {
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     },
     onRunComplete: function() {
-        // Save cookies
+         //Save cookies
         fs.write(cookiePath, JSON.stringify(phantom.cookies), 644)
         this.exit(0)
     },

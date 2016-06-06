@@ -1,16 +1,12 @@
 {
   "name": "mint-getaccounts-casper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Crawls mint.com with CasperJS to get your account information",
-  "main": "npm.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Rob Vella <me@robvella.com>",
   "license": "GPL-3.0",
-  "repository": "https://github.com/deftx/mint-getaccounts-casper.git",
-  "dependencies": {
-    "casperjs": "^1.1.1",
-    "system": "^1.0.6"
-  }
+  "repository": "https://github.com/deftx/mint-getaccounts-casper.git"
 }
