@@ -1,6 +1,6 @@
 {
   "name": "mint-getaccounts-casper",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Crawls mint.com with CasperJS to get your account information",
   "main": "app.js",
   "scripts": {
