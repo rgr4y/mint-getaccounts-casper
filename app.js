@@ -38,7 +38,7 @@ var casper = require('casper').create({
         });
 
         casper.echo(obj)
-        caspe.exit(255)
+        casper.exit(255)
     }
 })
 
