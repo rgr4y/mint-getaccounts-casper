@@ -80,19 +80,20 @@ casper.thenOpen('https://wwws.mint.com/login.event', function() {
                 this.fillSelectors('form#ius-mfa-otp-form', {
                     '#ius-mfa-confirm-code': code
                 }, true)
-            }, 50000)
+            }, 10000)
         }, function() {
             this.log('Timeout waiting for 2FA. Either it failed or you didn\'t need it')
-        }, 5000)
+        }, 10000)
     }, function() {
         this.log('No login asked for -- probably already logged in')
-    }, 5000)
+    }, 10000)
 
     // Wait for token to exist in a URL, then proceed on to login
     this.waitFor(function() {
         return token === null ? false : true
     }, function() {
         this.log('Got a token!')
+        casper.unwait()
         getAccounts.call(this)
     }, function tokenTimeout() {
         this.die('Timeout waiting for token')
@@ -122,28 +123,25 @@ function getAccounts()
         'task': 'getAccountsSorted'
     }
 
-    // We're in! Now let's get account info
-    this.waitForSelector('.moduleAccount .accounts-list', function() {
-        this.thenOpen('https://wwws.mint.com/bundledServiceController.xevent?legacy=false&token=' + token,
-          {
-              method: 'POST',
-              data: {
-                  'input': JSON.stringify([input])
-              }
-          },
-          function() {
-              var json = JSON.parse(this.getPageContent())
-
-              if (!json || !json.response[request_id] || json.response.errorCode) {
-                  this.die(this.getPageContent())
-                  return this
-              }
-
-              this.echo(JSON.stringify(json.response[request_id].response))
-              request_id++
+    // We have a token now, so we can request the JSON directly with a token
+    this.thenOpen('https://wwws.mint.com/bundledServiceController.xevent?legacy=false&token=' + token,
+      {
+          method: 'POST',
+          data: {
+              'input': JSON.stringify([input])
           }
-        )
-    }, 10000)
+      },
+      function() {
+          var json = JSON.parse(this.getPageContent())
+
+          if (!json || !json.response[request_id] || json.response.errorCode) {
+              this.die(this.getPageContent())
+              return this
+          }
+
+          this.echo(JSON.stringify(json.response[request_id].response))
+          request_id++
+    })
 
     return this
 }
