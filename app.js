@@ -1,22 +1,21 @@
-
 // Enter your login and password here
-var mintUser = 'YOUR_USERNAME'
-var mintPass = 'YOUR_PASSWORD'
+var mintUser = 'YOUR_MINT_USERNAME'
+var mintPass = 'YOUR_MINT_PASSWORD'
 //
 
 var fs = require('fs')
 var system = require('system')
+// Emulates node __dirname
 var currentFile = require('system').args[3]
 var __dirname = fs.absolute(currentFile).split('/')
 __dirname.pop()
 __dirname = __dirname.join("/") + "/"
 var cookiePath = __dirname + '/storage/cookies.json'
-var now = Math.floor(Date.now() / 1000)
 var token = null
 var request_id = 42
 var casper = require('casper').create({
-    //verbose: true,
-    //logLevel: 'debug',
+    verbose: true,
+    logLevel: 'debug',
     pageSettings: {
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     },
@@ -25,11 +24,24 @@ var casper = require('casper').create({
         fs.write(cookiePath, JSON.stringify(phantom.cookies), 644)
         this.exit(0)
     },
-    onDie: function(msg) {
-        this.echo(JSON.stringify({
-            msg: msg,
-            error: true
-        }))
+    onDie: function(casper, msg) {
+        var obj = {
+            'msg': msg,
+            'error': true
+        }
+        var seen = [];
+
+        obj = JSON.stringify(obj, function(key, val) {
+            if (val != null && typeof val == "object") {
+                if (seen.indexOf(val) >= 0) {
+                    return;
+                }
+                seen.push(val);
+            }
+            return val;
+        });
+
+        this.echo(obj)
         this.exit(255)
     }
 })
@@ -41,26 +53,21 @@ if (fs.isFile(cookiePath))
 casper.start()
 casper.thenOpen('https://wwws.mint.com/login.event', function() {
     this.on("resource.received", function(response) {
-        if (response.url.indexOf('oauth2.xevent?token=') > -1) {
+        if (token === null && response.url.indexOf('oauth2.xevent?token=') > -1) {
             var matches = response.url.match(/xevent\?token=(.*?)&/)
             token = matches[1]
         }
     })
 
-    this.waitFor(function() {
-        return token === null ? false : true
-    }, function() {
-        this.log('Got a token!')
+    // Waits for login form
+    this.waitForSelector("form input[name='Email']", function() {
+        casper.log('Found login form')
+        this.fillSelectors('form#ius-form-sign-in', {
+            'input[name = Email]' :  mintUser,
+            'input[name = Password]' : mintPass
+        }, true)
 
-        this.waitForSelector("form input[name='Email']", function() {
-            this.fillSelectors('form#ius-form-sign-in', {
-                'input[name = Email ]' :  mintUser,
-                'input[name = Password ]' : mintPass
-            }, true)
-        }, function() {
-            this.log('No login asked for -- already logged in')
-        })
-
+        // Waits to see if 2 factor auth is taking place. Will initiate the 2FA process and read the code from stdin
         this.waitForText('send you a code to verify', function() {
             this.click('#ius-mfa-options-submit-btn')
 
@@ -71,15 +78,23 @@ casper.thenOpen('https://wwws.mint.com/login.event', function() {
                 this.fillSelectors('form#ius-mfa-otp-form', {
                     '#ius-mfa-confirm-code': code
                 }, true)
+            }, 50000)
+        }, function() {
+            this.log('Timeout waiting for 2FA. Either it failed or you didn\'t need it')
+        }, 5000)
+    }, function() {
+        this.log('No login asked for -- probably already logged in')
+    }, 5000)
 
-                getAccounts.call(this)
-            })
-        }, function timeout() {
-            getAccounts.call(this)
-        })
+    // Wait for token to exist in a URL, then proceed on to login
+    this.waitFor(function() {
+        return token === null ? false : true
+    }, function() {
+        this.log('Got a token!')
+        getAccounts.call(this)
     }, function tokenTimeout() {
         this.die('Timeout waiting for token')
-    })
+    }, 60000)
 })
 
 function getAccounts()
@@ -126,7 +141,7 @@ function getAccounts()
               request_id++
           }
         )
-    })
+    }, 10000)
 
     return this
 }
