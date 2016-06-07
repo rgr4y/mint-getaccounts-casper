@@ -106,11 +106,10 @@ casper.thenOpen('https://wwws.mint.com/overview.event', function () {
       this.click("#ius-mfa-otp-submit-btn")
 
       this.waitFor(function check() {
-        if (token) return true
-        return false
+        return !token ? false : true
       }, function then() {
         getAccounts.call(this)
-      })
+      }, 30000)
     }, function timeout () {
       this.log('Timeout waiting for 2FA. Either it failed or you didn\'t need it')
     }, 30000)
