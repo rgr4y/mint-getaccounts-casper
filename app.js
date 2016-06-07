@@ -23,17 +23,17 @@ var casper = require('casper').create({
       'msg': msg,
       'error': true
     }
-    var seen = [];
+    var seen = []
 
     obj = JSON.stringify(obj, function (key, val) {
       if (val != null && typeof val == "object") {
         if (seen.indexOf(val) >= 0) {
-          return;
+          return
         }
-        seen.push(val);
+        seen.push(val)
       }
-      return val;
-    });
+      return val
+    })
 
     casper.echo(obj)
     casper.exit(255)
@@ -42,7 +42,7 @@ var casper = require('casper').create({
 
 // Allow CLI options to override the options above
 if (casper.cli.get('email') && casper.cli.get('password')) {
-  mintEmail = casper.cli.get('email');
+  mintEmail = casper.cli.get('email')
   mintPass = casper.cli.get('password')
 } else {
   casper.options.onDie(casper, 'You must enter an e-mail and password')
@@ -67,7 +67,7 @@ casper.thenOpen('https://wwws.mint.com/overview.event', function () {
     if (token) this.log('Found token before login!')
     return token || this.exists("form input[name='Email']")
   }, function then() {
-    if (token) return true;
+    if (token) return true
     casper.log('Found login form')
     this.fillSelectors('form#ius-form-sign-in', {
       'input[name = Email]': mintEmail,
@@ -99,14 +99,18 @@ casper.thenOpen('https://wwws.mint.com/overview.event', function () {
     this.waitForText('We sent a code to', function () {
       this.log('Enter the code you were texted / emailed', 'error')
       var code = system.stdin.readLine()
-      this.log("code entered: " + code);
+      this.log("code entered: " + code)
       this.fillSelectors('form#ius-mfa-otp-form', {
         '#ius-mfa-confirm-code': code
       })
-      this.click("#ius-mfa-otp-submit-btn");
-      this.wait(10000, function(){
-          // casper.capture('screenshots/done.png');
-      });
+      this.click("#ius-mfa-otp-submit-btn")
+
+      this.waitFor(function check() {
+        if (token) return true
+        return false
+      }, function then() {
+        getAccounts.call(this)
+      })
     }, function timeout () {
       this.log('Timeout waiting for 2FA. Either it failed or you didn\'t need it')
     }, 30000)
