@@ -8,8 +8,8 @@ __dirname = __dirname.join("/") + "/"
 var cookiePath = __dirname + "/storage/cookies.json"
 
 var casper = require('casper').create({
-  verbose: true,
-  logLevel: 'debug',
+  // verbose: true,
+  // logLevel: 'debug',
   pageSettings: {
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
   },
@@ -153,7 +153,7 @@ function getAccounts () {
         return this
       }
 
-      this.echo("START-A3416528-04D8-4E47-9BE7-A4BF214E5C45-START" + JSON.stringify(json.response[ request_id ].response) + "END-A3416528-04D8-4E47-9BE7-A4BF214E5C45-END")
+      this.echo(JSON.stringify(json.response[ request_id ].response))
       request_id++
     })
 
