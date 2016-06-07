@@ -8,8 +8,8 @@ __dirname = __dirname.join("/") + "/"
 var cookiePath = __dirname + "/storage/cookies.json"
 
 var casper = require('casper').create({
-  //verbose: true,
-  //logLevel: 'debug',
+  verbose: true,
+  logLevel: 'debug',
   pageSettings: {
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
   },
@@ -49,8 +49,9 @@ if (casper.cli.get('email') && casper.cli.get('password')) {
 }
 
 // Restore cookies from file
-if (fs.isFile(cookiePath))
+if (fs.isFile(cookiePath)){
   phantom.cookies = JSON.parse(fs.read(cookiePath))
+}
 
 casper.start()
 casper.thenOpen('https://wwws.mint.com/overview.event', function () {
@@ -98,10 +99,14 @@ casper.thenOpen('https://wwws.mint.com/overview.event', function () {
     this.waitForText('We sent a code to', function () {
       this.log('Enter the code you were texted / emailed', 'error')
       var code = system.stdin.readLine()
-
+      this.log("code entered: " + code);
       this.fillSelectors('form#ius-mfa-otp-form', {
         '#ius-mfa-confirm-code': code
-      }, true)
+      })
+      this.click("#ius-mfa-otp-submit-btn");
+      this.wait(10000, function(){
+          // casper.capture('screenshots/done.png');
+      });
     }, function timeout () {
       this.log('Timeout waiting for 2FA. Either it failed or you didn\'t need it')
     }, 30000)
@@ -148,7 +153,7 @@ function getAccounts () {
         return this
       }
 
-      this.echo(JSON.stringify(json.response[ request_id ].response))
+      this.echo("START-A3416528-04D8-4E47-9BE7-A4BF214E5C45-START" + JSON.stringify(json.response[ request_id ].response) + "END-A3416528-04D8-4E47-9BE7-A4BF214E5C45-END")
       request_id++
     })
 
