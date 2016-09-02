@@ -157,7 +157,7 @@ function getAccounts () {
         return this
       }
       
-      this.echo("START-A3416528-04D8-4E47-9BE7-A4BF214E5C45-START" + JSON.stringify(json.response[ request_id ].response) + "END-A3416528-04D8-4E47-9BE7-A4BF214E5C45-END")
+      this.echo(JSON.stringify(json.response[ request_id ].response))
       request_id++
     })
 
