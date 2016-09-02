@@ -8,8 +8,8 @@ __dirname = __dirname.join("/") + "/"
 var cookiePath = __dirname + "/storage/cookies.json"
 
 var casper = require('casper').create({
-  // verbose: true,
-  // logLevel: 'debug',
+  verbose: true,
+  logLevel: 'debug',
   pageSettings: {
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
   },
@@ -54,7 +54,7 @@ if (fs.isFile(cookiePath)){
 }
 
 casper.start()
-casper.thenOpen('https://wwws.mint.com/overview.event', function () {
+casper.thenOpen('https://mint.intuit.com/overview.event', function () {
   this.on("resource.received", function (response) {
     if (token === null && response.url.indexOf('oauth2.xevent?token=') > -1) {
       var matches = response.url.match(/xevent\?token=(.*?)&/)
@@ -72,7 +72,8 @@ casper.thenOpen('https://wwws.mint.com/overview.event', function () {
     this.fillSelectors('form#ius-form-sign-in', {
       'input[name = Email]': mintEmail,
       'input[name = Password]': mintPass
-    }, true)
+    })
+    this.click('#ius-sign-in-submit-btn')
   }, function timeout() {
     this.log('No login or token asked for -- probably already logged in')
   }, 30000)
@@ -141,7 +142,7 @@ function getAccounts () {
   }
 
   // We have a token now, so we can request the JSON directly with a token
-  this.thenOpen('https://wwws.mint.com/bundledServiceController.xevent?legacy=false&token=' + token,
+  this.thenOpen('https://mint.intuit.com/bundledServiceController.xevent?legacy=false&token=' + token,
     {
       method: 'POST',
       data: {
@@ -155,7 +156,7 @@ function getAccounts () {
         this.onDie(this, this.getPageContent())
         return this
       }
-
+      
       this.echo(JSON.stringify(json.response[ request_id ].response))
       request_id++
     })
