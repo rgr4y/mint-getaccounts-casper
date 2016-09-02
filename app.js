@@ -54,7 +54,7 @@ if (fs.isFile(cookiePath)){
 }
 
 casper.start()
-casper.thenOpen('https://wwws.mint.com/overview.event', function () {
+casper.thenOpen('https://mint.intuit.com/overview.event', function () {
   this.on("resource.received", function (response) {
     if (token === null && response.url.indexOf('oauth2.xevent?token=') > -1) {
       var matches = response.url.match(/xevent\?token=(.*?)&/)
@@ -142,7 +142,7 @@ function getAccounts () {
   }
 
   // We have a token now, so we can request the JSON directly with a token
-  this.thenOpen('https://wwws.mint.com/bundledServiceController.xevent?legacy=false&token=' + token,
+  this.thenOpen('https://mint.intuit.com/bundledServiceController.xevent?legacy=false&token=' + token,
     {
       method: 'POST',
       data: {
